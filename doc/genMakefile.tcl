@@ -247,7 +247,7 @@ all:
 
 }
 
-executableDeps {converters/*.cpp} {examples/*.cpp}
+executableDeps {converters/*.cpp} {examples/*.cpp} {DoubleHiggs/*.cpp}
 
 executableDeps {readers/DelphesHepMC.cpp} {readers/DelphesLHEF.cpp} {readers/DelphesSTDHEP.cpp}
 
@@ -352,7 +352,7 @@ distclean: clean
 dist:
 	@echo ">> Building $(DISTTAR)"
 	@mkdir -p $(DISTDIR)
-	@cp -a CREDITS README VERSION Makefile configure classes converters display doc examples external modules python readers $(DISTDIR)
+	@cp -a CREDITS README VERSION Makefile configure classes converters display doc examples DoubleHiggs external modules python readers $(DISTDIR)
 	@find $(DISTDIR) -depth -name .\* -exec rm -rf {} \;
 	@tar -czf $(DISTTAR) $(DISTDIR)
 	@rm -rf $(DISTDIR)

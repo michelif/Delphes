@@ -20,12 +20,17 @@
 
 using namespace std;
 
-int main()
+int main(int argc, char *argv[])
 {
 
-  cout<<"starting"<<endl;
-  DoubleHiggsAnalysis *Analyzer=new DoubleHiggsAnalysis("delphes_out_SM_14TeV_NoPileUp.root");
-  cout<<"analyzing"<<endl;
+  if(argc < 2 || argc > 3)
+    {
+      cout << " Usage: ./DoubleHiggsAnalysis input_file output_file" << endl;
+      return 1;
+    }
+  
+  
+  DoubleHiggsAnalysis *Analyzer=new DoubleHiggsAnalysis(argv[1],argv[2]);
   Analyzer->Analyze();
 
 

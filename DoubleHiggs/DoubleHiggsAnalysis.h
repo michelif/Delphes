@@ -28,14 +28,15 @@ using namespace std;
 class DoubleHiggsAnalysis
 {
 public:
-  DoubleHiggsAnalysis(const char *inputFile);
+  DoubleHiggsAnalysis(const char *inputFile, const char *outputFile);
   ~DoubleHiggsAnalysis();
 
   TFile* outFile_;
+  TTree* treePassedEvents_;
   TChain* chain_;
   ExRootTreeReader *treeReader_;
 
-  bool JetSelection(TClonesArray *branchJet, bool tightBtagWP);
+  bool JetSelection(TClonesArray *branchJet, bool looseBtagWP);
   bool PhotonSelection(TClonesArray *branchPhoton);
 
   void setOutFile(const char *outputFile);

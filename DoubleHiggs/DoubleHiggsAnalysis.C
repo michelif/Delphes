@@ -17,22 +17,20 @@ void DoubleHiggsAnalysis::Analyze(){
 
   TH1F *histPhoMass = new TH1F("mass", "M_{inv}(#gamma#gamma)", 100, 100.0, 180.0);
 
-  setOutFile("outprova.root");
-  cout<<"starting loop"<<endl;
+  cout<<"starting loop on "<<numberOfEntries<<" entries"<<endl;
   // Loop over all events
   for(Int_t entry = 0; entry < numberOfEntries; ++entry)
     {
+      if(entry%300 == 0)cout<<"### Processing entry: "<<entry<<endl; 
     // Load selected branches with data from specified event
       treeReader_->ReadEntry(entry);
       bool passedJetSelection=false;
       bool passedPhotonSelection=false;
       
-      bool tightBtagWP=false;
+      bool looseBtagWP=false;
       
-      passedJetSelection=JetSelection(branchJet, tightBtagWP);
-      cout<<"passed jet"<<endl;
+      passedJetSelection=JetSelection(branchJet, looseBtagWP);
       passedPhotonSelection=PhotonSelection(branchPhoton);
-      cout<<"passed pho"<<endl;      
       
       //filling histograms
       if(passedJetSelection && passedPhotonSelection){
@@ -57,7 +55,7 @@ void DoubleHiggsAnalysis::Analyze(){
 
 }
 
-DoubleHiggsAnalysis::DoubleHiggsAnalysis(const char *inputFile)
+DoubleHiggsAnalysis::DoubleHiggsAnalysis(const char *inputFile,const char *outputFile)
 {
 
 
@@ -67,13 +65,13 @@ DoubleHiggsAnalysis::DoubleHiggsAnalysis(const char *inputFile)
   
   // Create object of class ExRootTreeReader
   treeReader_ = new ExRootTreeReader(chain_);
-  
+  setOutFile(outputFile);  
 
 }
 
 
 //-------------------------------------------
-bool DoubleHiggsAnalysis::JetSelection(TClonesArray *branchJet, bool tightBtagWP){
+bool DoubleHiggsAnalysis::JetSelection(TClonesArray *branchJet, bool looseBtagWP){
 
   bool passed=false;
 
@@ -96,8 +94,8 @@ bool DoubleHiggsAnalysis::JetSelection(TClonesArray *branchJet, bool tightBtagWP
     bool isBtaggedNormal = (jet->BTag & (1 << 0));
     bool isBtaggedLoose= (jet->BTag & (1 << 1));
 
-    bool isBtagged=isBtaggedLoose;
-    if(tightBtagWP)isBtagged=isBtaggedNormal;
+    bool isBtagged=isBtaggedNormal;
+    if(looseBtagWP)isBtagged=isBtaggedLoose;
     
     if(!isBtagged) continue;
 
@@ -125,9 +123,7 @@ bool DoubleHiggsAnalysis::JetSelection(TClonesArray *branchJet, bool tightBtagWP
 bool DoubleHiggsAnalysis::PhotonSelection(TClonesArray *branchPhoton){
 
   bool passed=false;
-  cout<<"branch"<<branchPhoton->GetEntries()<<endl;
   if(branchPhoton->GetEntries() < 2) return passed;
-  cout<<"passed branch"<<endl;
   Photon *pho1, *pho2;
 
   // Take first two photons
@@ -139,5 +135,15 @@ bool DoubleHiggsAnalysis::PhotonSelection(TClonesArray *branchPhoton){
   passed=true;
 
   return passed;
+
+}
+
+void DoubleHiggsAnalysis::createOutputTree(){
+
+  TTree* tree_passedEvents = new TTree();
+  tree_passedEvents->SetName("tree_passedEvents");
+  tree_passedEvents->Branch( "njets", &njets_t, "njets_t/I" );
+  tree_passedEvents->Branch( "nbjets_loose", &nbjets_loose_t, "nbjets_loose_t/I" );
+  tree_passedEvents->Branch( "nbjets_medium", &nbjets_medium_t, "nbjets_medium_t/I" );
 
 }

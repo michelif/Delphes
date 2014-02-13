@@ -52,7 +52,7 @@ public:
   float minDeltaRElePho_t,deltaRGammaGamma_t,minDeltaRGammaB_t, deltaRBB_t;
   float ptEle_t,ptMuon_t;
   float ptGG_t,ptBB_t,ptBBGG_t;
-  float mgg_t,mbb_t,mggbb_t;
+  float mbb_t,mggbb_t;
   float eventWeight_t;
   std::pair<int,int> bjet_indexes;
   std::pair<float,float> bjet_pt;
@@ -63,6 +63,9 @@ public:
   bool PhotonSelection(TClonesArray *branchPhoton);
 
   void createOutputTree();
+  void setGenEvents(float genevents);
+  void setEventWeight();
+  void setXsec(float xsec);
   void setOutFile(const char *outputFile);
   void Analyze();
 

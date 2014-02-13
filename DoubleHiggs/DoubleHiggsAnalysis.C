@@ -32,9 +32,11 @@ void DoubleHiggsAnalysis::Analyze(){
   TH1F *histPhoMass = new TH1F("mass", "M_{inv}(#gamma#gamma)", 100, 100.0, 180.0);
 
   //setXsec
-  setXsec(87.);
+  setXsec(0.000087);
   setGenEvents(numberOfEntries);
-  eventWeight_t=eventWeigh;
+  setEventWeight();
+  cout<<"-------------"<<xSec_<<" "<<xSec_<<" "<<numberOfEntries<<" "<<eventWeight_<<endl;
+  eventWeight_t=eventWeight_;
 
   cout<<"starting loop on "<<numberOfEntries<<" entries"<<endl;
   // Loop over all events
@@ -91,10 +93,10 @@ void DoubleHiggsAnalysis::Analyze(){
 	if(pho2->P4().DeltaR(jet1->P4()) < minDeltaRGammaB_t )minDeltaRGammaB_t=pho2->P4().DeltaR(jet1->P4());
 	if(pho2->P4().DeltaR(jet2->P4()) < minDeltaRGammaB_t )minDeltaRGammaB_t=pho2->P4().DeltaR(jet2->P4());
 	ptGG_t=(pho1->P4()+pho2->P4()).Pt();
-	ptBB_t=(jet1->P4()+jet->P4()).Pt();
+	ptBB_t=(jet1->P4()+jet2->P4()).Pt();
 	ptBBGG_t=ptBB_t+ptGG_t;
-	mgg_t=(pho1->P4()+pho2->P4()).M();
-	mgg_t=(jet1->P4()+jet2->P4()).M();
+	mbb_t=(jet1->P4()+jet2->P4()).M();
+	mggbb_t=((pho1->P4()+pho2->P4())+(jet1->P4()+jet2->P4())).M();
 	tree_passedEvents->Fill();
       }
     }
@@ -266,6 +268,8 @@ void DoubleHiggsAnalysis::createOutputTree(){
   tree_passedEvents->Branch( "phiPhot1", &phiPhot1_t, "phiPhot1_t/F" );
   tree_passedEvents->Branch( "phiPhot2", &phiPhot2_t, "phiPhot2_t/F" );
   tree_passedEvents->Branch( "mgg", &mgg_t, "mgg_t/F" );
+  tree_passedEvents->Branch( "mbb", &mbb_t, "mbb_t/F" );
+  tree_passedEvents->Branch( "mggbb", &mggbb_t, "mggbb_t/F" );
   tree_passedEvents->Branch( "ptJet", ptJet_t, "ptJet_t[njets_t]/F" );
   tree_passedEvents->Branch( "etaJet", etaJet_t, "etaJet_t[njets_t]/F" );
   tree_passedEvents->Branch( "phiJet", phiJet_t, "phiJet_t[njets_t]/F" );

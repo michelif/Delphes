@@ -33,6 +33,8 @@ public:
   ~DoubleHiggsAnalysis();
 
   TFile* outFile_;
+  ofstream efficiencyFile_;
+
   TTree* tree_passedEvents;
   TChain* chain_;
   ExRootTreeReader *treeReader_;
@@ -43,6 +45,12 @@ public:
   float xSec_;
   float totalGenEvents_;
   float eventWeight_;
+
+  //counters
+  int counters_photonSel_;
+  int counters_jetSel_;
+  int counters_additionalCuts_;
+  int counters_massWindow_;
 
   //variables for the output tree
   int njets_t, nbjets_t,nleptons_t,nelectrons_t,nmuons_t,electron_index_t,muon_index_t;
@@ -61,11 +69,13 @@ public:
   bool LeptonSelection(TClonesArray *branchElectron,TClonesArray *branchMuon,Photon *pho1, Photon *pho2);
   bool JetSelection(TClonesArray *branchJet, bool looseBtagWP,Photon *pho1, Photon *pho2);
   bool PhotonSelection(TClonesArray *branchPhoton);
+  bool additionalCuts(float deltaRGGcut, float deltaRGBcut, float deltaRBBcut,int nJetscut);
 
   void createOutputTree();
   void setGenEvents(float genevents);
   void setEventWeight();
   void setXsec(float xsec);
+  void PrintEfficiencies(string outname);
   void setOutFile(const char *outputFile);
   void Analyze();
 

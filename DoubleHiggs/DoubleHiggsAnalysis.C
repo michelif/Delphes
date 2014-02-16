@@ -35,7 +35,6 @@ void DoubleHiggsAnalysis::Analyze(){
   setXsec(0.000087);
   setGenEvents(numberOfEntries);
   setEventWeight();
-  cout<<"-------------"<<xSec_<<" "<<xSec_<<" "<<numberOfEntries<<" "<<eventWeight_<<endl;
   eventWeight_t=eventWeight_;
 
   cout<<"starting loop on "<<numberOfEntries<<" entries"<<endl;
@@ -58,21 +57,22 @@ void DoubleHiggsAnalysis::Analyze(){
       
       passedPhotonSelection=PhotonSelection(branchPhoton);
       if (passedPhotonSelection){
+	counters_photonSel_++;
 	passedJetSelection=JetSelection(branchJet, looseBtagWP,pho1,pho2);
 	passedLeptonSelection=LeptonSelection(branchElectron,branchMuon,pho1,pho2);
       }
       
       //filling histograms and tree
       if(passedJetSelection && passedPhotonSelection){
-
+	counters_jetSel_++;
 
 	ptPhot1_t=pho1->PT;
 	ptPhot2_t=pho2->PT;
 	etaPhot1_t=pho1->Eta;
 	etaPhot2_t=pho2->Eta;
+	if(etaPhot2_t == 0)cout<<"--------"<<endl;
 	phiPhot1_t=pho1->Phi;
 	phiPhot2_t=pho2->Phi;
-	mgg_t=((pho1->P4()) + (pho2->P4())).M();
 	histPhoMass->Fill(((pho1->P4()) + (pho2->P4())).M());
 
 	//Filling jet variables
@@ -95,17 +95,24 @@ void DoubleHiggsAnalysis::Analyze(){
 	ptGG_t=(pho1->P4()+pho2->P4()).Pt();
 	ptBB_t=(jet1->P4()+jet2->P4()).Pt();
 	ptBBGG_t=ptBB_t+ptGG_t;
+	mgg_t=((pho1->P4()) + (pho2->P4())).M();
 	mbb_t=(jet1->P4()+jet2->P4()).M();
 	mggbb_t=((pho1->P4()+pho2->P4())+(jet1->P4()+jet2->P4())).M();
-	tree_passedEvents->Fill();
+
+	bool passedAdditionalCuts=false;
+	float deltaRGGcut=2.;
+	float deltaRGBcut=1.5;
+	float deltaRBBcut=2.;
+	int njetsCut=4;
+	passedAdditionalCuts=additionalCuts(deltaRGGcut,deltaRGBcut,deltaRBBcut,njetsCut);
+	if(passedAdditionalCuts){
+	  counters_additionalCuts_++;
+	  tree_passedEvents->Fill();
+	  if((mgg_t>120. && mgg_t<130.) && (mbb_t >105. && mbb_t<145.))counters_massWindow_++;
+	}
       }
     }
   
-  // Show resulting histograms
-  //  histJetPT->Write();
-  //  histPhoMass->Write();
-  //  histPhoLeadPT->Write();
-  //  histPhoSubleadPT->Write();
   histPhoMass->Write();
   tree_passedEvents->Write();
   outFile_->Write();
@@ -125,7 +132,10 @@ DoubleHiggsAnalysis::DoubleHiggsAnalysis(const char *inputFile,const char *outpu
   treeReader_ = new ExRootTreeReader(chain_);
   setOutFile(outputFile);  
   createOutputTree();
-
+  counters_photonSel_=0;
+  counters_jetSel_=0;
+  counters_additionalCuts_=0;
+  counters_massWindow_=0;
 }
 
 
@@ -147,7 +157,11 @@ bool DoubleHiggsAnalysis::JetSelection(TClonesArray *branchJet, bool looseBtagWP
 
   for(int ijet=0;ijet<branchJet->GetEntries();ijet++){
     Jet *jet = (Jet*) branchJet->At(ijet);
-    if(jet->P4().DeltaR(pho1->P4())<0.5) continue;
+
+    if(TMath::Abs(jet->Eta)>2.5) continue;
+    if(TMath::Abs(jet->PT)<25.) continue;
+    njets_t++;    
+
     if(TMath::Abs(jet->Eta)>2.4) continue;
     if(TMath::Abs(jet->PT)<30.) continue;
 
@@ -156,7 +170,7 @@ bool DoubleHiggsAnalysis::JetSelection(TClonesArray *branchJet, bool looseBtagWP
 
     bool isBtagged=isBtaggedNormal;
     if(looseBtagWP)isBtagged=isBtaggedLoose;
-    njets_t++;    
+    
 
     if(!isBtagged) continue;
     nbjets_t++;
@@ -247,12 +261,21 @@ bool DoubleHiggsAnalysis::PhotonSelection(TClonesArray *branchPhoton){
   pho2 = (Photon *) branchPhoton->At(1);
 
   if (pho1->PT < 40. || pho2->PT < 25. )return passed;
-  if (pho1->Eta > 2.5 || pho2->Eta > 2.5 )return passed;
+  if (TMath::Abs(pho1->Eta) > 2.5 || TMath::Abs(pho2->Eta) > 2.5 )return passed;
   passed=true;
 
   return passed;
 
 }
+
+bool DoubleHiggsAnalysis::additionalCuts(float deltaRGGcut, float deltaRGBcut, float deltaRBBcut,int nJetscut){
+  if(deltaRGammaGamma_t>deltaRGGcut) return false;
+  if(minDeltaRGammaB_t<deltaRGBcut) return false;
+  if(deltaRBB_t>deltaRBBcut) return false;
+  if(njets_t>nJetscut) return false;
+  return true;
+}
+
 
 void DoubleHiggsAnalysis::createOutputTree(){
 
@@ -285,4 +308,31 @@ void DoubleHiggsAnalysis::createOutputTree(){
   tree_passedEvents->Branch( "deltaRGammaGamma", &deltaRGammaGamma_t, "deltaRGammaGamma_t/F" );
   tree_passedEvents->Branch( "minDeltaRGammaB", &minDeltaRGammaB_t, "minDeltaRGammaB_t/F" );
   tree_passedEvents->Branch( "deltaRBB", &deltaRBB_t, "deltaRBB_t/F" );
+}
+
+void DoubleHiggsAnalysis::PrintEfficiencies(string outname){
+  string effname (outname);
+  effname.erase(effname.end()-5,effname.end());
+  effname+="_eff.txt";
+  efficiencyFile_.open(effname);
+
+  efficiencyFile_<<"total Events: "<<totalGenEvents_<<endl;
+  efficiencyFile_<<"passing photon sel: "<<counters_photonSel_<<endl;
+  efficiencyFile_<<"passing jet sel: "<<counters_jetSel_<<endl;
+  efficiencyFile_<<"passing additional sel: "<<counters_additionalCuts_<<endl;
+
+  efficiencyFile_<<"**********Efficiency************"<<endl;
+  float passingPho=counters_photonSel_/totalGenEvents_;
+  float passingJet=(float)counters_jetSel_/counters_photonSel_;
+  float passingAdditional=(float)counters_additionalCuts_/counters_jetSel_;
+  efficiencyFile_<<"photon cuts eff: "<<passingPho*100.<<"%"<<endl;
+  efficiencyFile_<<"jet cuts eff: "<<passingJet*100.<<"%"<<endl;
+  efficiencyFile_<<"additional cuts eff: "<<passingAdditional*100.<<"%"<<endl;
+  efficiencyFile_<<"*******************************"<<endl;
+  efficiencyFile_<<"nevents before mass cuts:"<<counters_additionalCuts_*eventWeight_*3000000<<endl;
+  efficiencyFile_<<"nevents after mass cuts:"<<counters_massWindow_*eventWeight_*3000000<<endl;
+  efficiencyFile_.close();
+
+
+
 }

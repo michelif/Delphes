@@ -1433,17 +1433,17 @@ void DrawBase::drawHisto_fromHistos( std::vector<TH1D*> dataHistos, std::vector<
       else
         mcHistos[0]->SetFillColor( mcFiles_[0].fillColor );
       mcHistos[0]->SetLineColor(kBlack);
-      if( noStack_ ) {
+      //      if( noStack_ ) {
         if( mcFiles_[0].fillStyle!= 1001 ) {
           mcHistos[0]->SetLineColor( mcFiles_[0].fillColor );
           mcHistos[0]->SetLineWidth(2);
         }
-      }
+	//      }
       if( mcFiles_[0].fillStyle==-1 ) {
         if( noStack_ ) //default is solid fill (if stacked)
           mcHistos[0]->SetFillStyle( fillStyle_default++ ); //so that it changes at every histo
       } else {
-        if( noStack_ ) //default is solid fill (if stacked)
+	//        if( noStack_ ) //default is solid fill (if stacked)
           mcHistos[0]->SetFillStyle( mcFiles_[0].fillStyle );
       }
       if( mcFiles_[0].markerStyle!=-1 ) {

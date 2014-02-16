@@ -32,6 +32,6 @@ int main(int argc, char *argv[])
   
   DoubleHiggsAnalysis *Analyzer=new DoubleHiggsAnalysis(argv[1],argv[2]);
   Analyzer->Analyze();
-
+  Analyzer->PrintEfficiencies(argv[2]);
 
 }

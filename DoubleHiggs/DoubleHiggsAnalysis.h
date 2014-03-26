@@ -35,6 +35,8 @@ public:
   TFile* outFile_;
   ofstream efficiencyFile_;
 
+  string inputFile_;
+
   TTree* tree_passedEvents;
   TChain* chain_;
   ExRootTreeReader *treeReader_;
@@ -43,10 +45,12 @@ public:
   Jet *jet1, *jet2;	  
 
   float xSec_;
+  std::map<TString,double> xSecMap_;
   float totalGenEvents_;
   float eventWeight_;
 
   //counters
+  vector<int> counters_total_;
   int counters_photonSel_;
   int counters_jetSel_;
   int counters_additionalCuts_;
@@ -75,8 +79,11 @@ public:
   void setGenEvents(float genevents);
   void setEventWeight();
   void setXsec(float xsec);
+  void getProcessXsec();
+  void createXsecMap();
   void PrintEfficiencies(string outname);
   void setOutFile(const char *outputFile);
   void Analyze();
+  void computeEfficiencies();
 
 };

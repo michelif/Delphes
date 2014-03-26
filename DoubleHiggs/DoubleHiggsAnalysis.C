@@ -10,6 +10,41 @@ void DoubleHiggsAnalysis::setXsec(float xsec){
   xSec_=xsec;
 }
 
+void DoubleHiggsAnalysis::createXsecMap(){
+  xSecMap_['HH']=0.000089;
+  xSecMap_['bbaa+0j']=0.043;
+  xSecMap_['bbaa+ge1j']=0.069;
+  xSecMap_['bbaa+ge2j']=0.040;
+  cout<<xSecMap_['bbaa+ge2j']<<endl;
+}
+
+void DoubleHiggsAnalysis::getProcessXsec(){
+
+  std::string process="HH";
+  std::string processToFind="0j";
+  std::size_t found =inputFile_.find(processToFind);
+  if (found!=std::string::npos){
+    process='bbaa+0j';
+  } else {
+    processToFind='1j';
+    found=inputFile_.find(processToFind);
+    if (found!=std::string::npos){
+      process='bbaa+ge1j';
+    } else {
+      processToFind='2j';
+      found=inputFile_.find(processToFind);
+      if (found!=std::string::npos){
+	process='bbaa+ge2j';
+      }
+    }
+  }
+
+  cout<<"....process:"<<process<<endl;
+  cout<<xSecMap_[process]<<endl;
+  setXsec(xSecMap_[process]);
+
+}
+
 void DoubleHiggsAnalysis::setGenEvents(float genevents){
   totalGenEvents_=genevents;
 }
@@ -32,7 +67,7 @@ void DoubleHiggsAnalysis::Analyze(){
   TH1F *histPhoMass = new TH1F("mass", "M_{inv}(#gamma#gamma)", 100, 100.0, 180.0);
 
   //setXsec
-  setXsec(0.000087);
+  getProcessXsec();
   setGenEvents(numberOfEntries);
   setEventWeight();
   eventWeight_t=eventWeight_;
@@ -125,6 +160,7 @@ DoubleHiggsAnalysis::DoubleHiggsAnalysis(const char *inputFile,const char *outpu
 
 
   // Create chain of root trees
+  inputFile_=inputFile;
   chain_=new TChain("Delphes");
   chain_->Add(inputFile);
   
@@ -136,6 +172,8 @@ DoubleHiggsAnalysis::DoubleHiggsAnalysis(const char *inputFile,const char *outpu
   counters_jetSel_=0;
   counters_additionalCuts_=0;
   counters_massWindow_=0;
+
+  createXsecMap();
 }
 
 
@@ -333,6 +371,24 @@ void DoubleHiggsAnalysis::PrintEfficiencies(string outname){
   efficiencyFile_<<"nevents after mass cuts:"<<counters_massWindow_*eventWeight_*3000000<<endl;
   efficiencyFile_.close();
 
+
+
+}
+
+
+void DoubleHiggsAnalysis::computeEfficiencies(){
+  Long64_t numberOfEntries = treeReader_->GetEntries();
+
+  // Get pointers to branches used in this analysis
+  TClonesArray *branchJet = treeReader_->UseBranch("Jet");
+  TClonesArray *branchPhoton = treeReader_->UseBranch("Photon");
+  TClonesArray *branchElectron = treeReader_->UseBranch("Electron");
+  TClonesArray *branchMuon = treeReader_->UseBranch("Muon");
+
+  //setXsec
+  setGenEvents(numberOfEntries);
+  setEventWeight();
+  eventWeight_t=eventWeight_;
 
 
 }

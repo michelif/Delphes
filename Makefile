@@ -148,6 +148,16 @@ tmp/DoubleHiggs/DoubleHiggsAnalysis.$(ObjSuf): \
 	DoubleHiggs/DoubleHiggsAnalysis.cpp \
 	classes/DelphesClasses.h \
 	external/ExRootAnalysis/ExRootTreeReader.h
+#drawPlots$(ExeSuf): \
+#	tmp/DoubleHiggs/drawPlots.$(ObjSuf)
+
+#tmp/DoubleHiggs/drawPlots.$(ObjSuf): \
+#	DoubleHiggs/drawPlots.cpp
+#drawTTVHgg_cs_data_mc_2$(ExeSuf): \
+#	tmp/DoubleHiggs/drawTTVHgg_cs_data_mc_2.$(ObjSuf)
+
+#tmp/DoubleHiggs/drawTTVHgg_cs_data_mc_2.$(ObjSuf): \
+#	DoubleHiggs/drawTTVHgg_cs_data_mc_2.cpp
 EXECUTABLE +=  \
 	hepmc2pileup$(ExeSuf) \
 	lhco2root$(ExeSuf) \
@@ -156,7 +166,9 @@ EXECUTABLE +=  \
 	root2pileup$(ExeSuf) \
 	stdhep2pileup$(ExeSuf) \
 	Example1$(ExeSuf) \
-	DoubleHiggsAnalysis$(ExeSuf)
+	DoubleHiggsAnalysis$(ExeSuf) \
+#	drawPlots$(ExeSuf) \
+#	drawTTVHgg_cs_data_mc_2$(ExeSuf)
 
 EXECUTABLE_OBJ +=  \
 	tmp/converters/hepmc2pileup.$(ObjSuf) \
@@ -166,7 +178,9 @@ EXECUTABLE_OBJ +=  \
 	tmp/converters/root2pileup.$(ObjSuf) \
 	tmp/converters/stdhep2pileup.$(ObjSuf) \
 	tmp/examples/Example1.$(ObjSuf) \
-	tmp/DoubleHiggs/DoubleHiggsAnalysis.$(ObjSuf)
+	tmp/DoubleHiggs/DoubleHiggsAnalysis.$(ObjSuf) \
+#	tmp/DoubleHiggs/drawPlots.$(ObjSuf) \
+#	tmp/DoubleHiggs/drawTTVHgg_cs_data_mc_2.$(ObjSuf)
 
 DelphesHepMC$(ExeSuf): \
 	tmp/readers/DelphesHepMC.$(ObjSuf)
@@ -1558,7 +1572,7 @@ distclean: clean
 dist:
 	@echo ">> Building $(DISTTAR)"
 	@mkdir -p $(DISTDIR)
-	@cp -a CREDITS README VERSION Makefile configure classes converters display doc examples DoubleHiggs external modules python readers $(DISTDIR)
+	@cp -a CREDITS README VERSION Makefile configure classes CommonTools converters display doc examples DoubleHiggs external modules python readers $(DISTDIR)
 	@find $(DISTDIR) -depth -name .\* -exec rm -rf {} \;
 	@tar -czf $(DISTTAR) $(DISTDIR)
 	@rm -rf $(DISTDIR)

@@ -165,7 +165,6 @@ int main(int argc, char *argv[])
         if(reader->EventReady())
         {
           ++eventCounter;
-
           readStopWatch.Stop();
 
           if(eventCounter > skipEvents)
